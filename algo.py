@@ -2,18 +2,18 @@ import gensim
 import csv
 import nltk
 import numpy as np
+import pickle
 from gensim import corpora, models,similarities
 
 #nltk.download('punkt')
 
+l=[]
 
+word_to_vec= gensim.models.KeyedVectors.load_word2vec_format('GoogleNews-vectors-negative300.bin', binary=True)
 
-word_to_vec= gensim.models.KeyedVectors.load_word2vec_format('GoogleNews-vectors-negative300.bin',binary=True)
-
-for work in word_to_vec.vocab:
-    print("==========")
-    print(work)
-
+#print(word_to_vec['Weegs'])
+#l.append(word_to_vec['Weegs'])
+#print(l)
 
 data_set=[]
 
@@ -41,30 +41,63 @@ with open('output.csv','r',encoding='utf-8') as f:
         tok_ans.append(nltk.word_tokenize(ques[i]))
 
 
-
+    print("Balle")
     vec_ques=[]
     vec_ans=[]
+
+
     for sublist in tok_ques:
+        tempword = []
         for word in sublist:
             if(word in word_to_vec.vocab):
-                tempword=word_to_vec[word]
-                vec_ques.append(tempword)
+                tempword.append(word_to_vec[word])
+        vec_ques.append(tempword)
+
 
     for sublist in tok_ans:
+        tempword = []
         for word in sublist:
             if (word in word_to_vec.vocab):
-                tempword = word_to_vec[word]
-                vec_ans.append(tempword)
+                tempword.append(word_to_vec[word])
+        vec_ans.append(tempword)
+
+    """
+    for row in vec_ans:
+        print("====",row)"""
+
+    print("Balle Balle")
+
+    pad_vec = np.ones((300,), dtype=np.float32)
 
 
-    """for row in tok_ans:
-        print(row)"""
+    ###change the implmenetation ----------
 
-    default_vec = np.ones((300,), dtype=np.float32)
 
-    for tok in tok_ques:
-        tok[14:]=[]
-        tok.append(default_vec)
-        print("---",tok)
+    for tok in vec_ques:
+        tok=tok[:15]
+        tok.append(pad_vec)
+
+    for tok in vec_ques:
+        if(len(tok)<15):
+            for i in range(15-len(tok)):
+                tok.append(pad_vec)
+
+    print("Balle x3")
+
+
+    ###change the implmenetation ----------
+    for tok in vec_ans:
+        tok=tok[:15]
+        tok.append(pad_vec)
+
+    for tok in vec_ans:
+        if (len(tok) < 15):
+            for i in range(15 - len(tok)):
+                tok.append(pad_vec)
+
+    print("finito")
+
+    with open('data.pickle','w') as f:
+        pickle.dump(str([vec_ques,vec_ans]),f)
 
 
